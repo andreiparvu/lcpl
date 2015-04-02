@@ -1,0 +1,74 @@
+Andrei Parvu
+341C3
+
+Tema 2 CPL
+-----------
+
+
+Rezolvarea temei din fisierul src/LCPLSemant.java urmareste urmatorii pasi:
+
+1. Se genereaza clasele default din limbajul LCPL: Object, String si IO
+
+2. Se parcurg clasele definite in fisierul sursa, se memoreaza fiecare definire
+si se construieste ierarhia de mosteniri
+
+3. Se verifica daca exista bucle in ierarhia de mosteniri, si daca exista clase
+nedefinite din care se mosteneste.
+
+4. Se parcurg clasele din nou, impreuna cu feature-urile lor:
+  * pentru metode se determina tipul returnat, se evalueaza tipul parametrilor,
+  se marcheaza metoda ca apartinand clasei curente si se verifica sa nu existe
+  alta metoda cu acelasi nume in clasa curenta. De asemenea, se verifica
+  ca metoda 'main' din clasa 'Main' sa nu returneze nimic si sa nu primeasca
+  parametrii.
+  * pentru atribute, se determina tipul returnat si se verifica sa nu existe
+  alt atribut cu acelasi nume.
+
+5. Se parcurg clasele pentru a treia oara,
+  * pentru metode, verificam daca avem eventuale metode suprascrise cu aceeasi
+  semnatura. Evaluam corpul fiecarei metode, si verificam ca tipul returnat de
+  acesta sa fie compatabil si tipul returnat de metoda.
+  * pentru atribute, verificam ca ele sa nu mai fi fost definite intr-o clasa
+  mostenita de clasa curenta si apol evaluam atributul.
+
+Pentru evaluarea corpurilor metodelor si a atributelor, fiecare clasa din
+packetul ro.pub.cs.lcpl are definita o metoda 'void eval(Properties)' care se
+ocupa cu evaluarea clasei respective.
+Parametrul primit de aceasta metoda, Properties, contine o referinta catre
+programul curent, o referinta catre clasa curenta, un hashmap cu toate clasele
+si un parametru boolean care determina daca se va folosi optiunea de constant
+folding sau nu.
+De asemenea, clasa Properties mai contine si o metoda care determina daca
+se poate face conversia de la un tip de date la altul, folositor pe parcursul
+evaluarii expresiilor, si cateva mesaje de eroare comune.
+
+Clasei LCPLClass i-au fost adaugate doua variabile:
+  * un hashmap intre nume de variabile din clasa respectiva si o stiva cu
+  referinte ale variabilelor din scope-ul curent
+  * un hashmao intre nume de metoda si o referinta catre metoda respectiva.
+
+De fiecare data cand intalnim un atribut, un paramteru de functie sau o
+variabila locala, o adaugam in stiva corespunzatoare ei din clasa curenta.
+Metoda takeVariabile din LCPLClass este folosita pentru a obtine o variabila -
+aceasta poate urca pe ierarhia de clase, sau se poate uita doar in clasa
+curenta (in cazul variabilelor referentiate cu 'self').
+O metoda asemanatoare exista si pentru metode, cu diferenta ca pentru o metoda
+putem selecta din ce clasa dorim sa se ia metoda (in cazul unui StaticDispatch).
+
+Restul informatiilor despre evaluara diferitelor expresii si a pasilor facuti
+pentru fiecare se pot obtine din cod si din comentariile aferente.
+
+Optiunea de constant folding a fost implementata doar pentru expresii formate
+numai din constante.
+Fiecare exprsie poate fi in una din cele 3 stari: variabila, constanta initiala
+(IntConstant sau StringConstant) sau constanta determinata (s-a determinat ca
+expresia este formata numai din constante).
+Expresiile au o metoda, checkConst, care in caz ca optiunea de constant folding
+este activata, verifica daca expresiile ce o formeaza sunt constante, si in
+caz afirmativ, seteaza si expresia curenta ca fiind constanta, folosint metoda
+compConsValue.
+Folosint metoda takeConstant se creaza o instanta de constanta (IntConstant sau
+StringConstant) de la o expresie normala (maximala) care a fost determinata ca
+fiind constanta. Arhiva include si un fisier test, test_folding.lcpl care
+exemplifica constant folding-ul pe diverse expresii.
+

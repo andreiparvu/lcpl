@@ -1,0 +1,5 @@
+*.class
+*.ast
+*.ir*
+*.run
+*.exe

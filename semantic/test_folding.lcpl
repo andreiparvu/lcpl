@@ -1,0 +1,19 @@
+class Main inherits IO
+  var Int a = 2 * 3; Int c = 3; Int b = a + (4 * 3 + 2) + c; end;
+
+  sum String a, String b -> String:
+    a + b;
+  end;
+
+  main:
+    [out ((void == void) + 3 < 1 + 1) + "abc"];
+
+    if 3 == 3 then
+      [out [sum 1+3, 4*5]];
+    else
+      "abc" + 1;
+    end;
+
+    [out b];
+  end;
+end;

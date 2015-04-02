@@ -1,0 +1,31 @@
+
+class VECTOR
+  var VECTOR v; Int poz; Object val; end;
+
+  INIT Int nr -> VECTOR :
+    if 1 < nr then
+      nr = nr - 1;
+
+      v = new VECTOR;
+      [v.INIT nr];
+    end;
+
+    self;
+  end;
+
+  SET Int poz, Object val:
+    if poz == 0 then
+      self.val = val;
+    else
+      [v.SET poz - 1, val];
+    end;
+  end;
+
+  GET Int poz -> Object:
+    if poz == 0 then
+      val;
+    else
+      [v.GET poz - 1];
+    end;
+  end;
+end;

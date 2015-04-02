@@ -1,0 +1,65 @@
+Andrei Parvu
+341C3
+
+
+Tema 3 CPL
+-----------
+
+
+Etapele generarii de cod porning de la analizorul semantic sunt:
+
+- se emite structura claselor, continand un pointer la structura de runtime
+si pointeri la atribute sau intregi. Atributele din structura unei clase sunt
+toate atributele clasei respective plus toate atributele mostenite de la
+clasele parinte. Metoda 'genAttributes()' genereaza aceasta lista de atribute
+- se genereaza numele claselor
+- se emite informatia de runtime a claselor. Pentru generarea tabelei de metode
+se foloseste metoda 'genMethodTable()' care adauga metodele unei clase la lista
+de metode obtinuta de la clasa parinte; daca metoda este deja (este suprascrisa),
+atunci se suprascrie si in tabel, altfel se adauga o noua intrare. Astfel, o
+metoda se va afla pe aceeasi pozitie in toate clasele din cadrul unei ierarhii
+de mostenire.
+- se genereaza codul pentru fiecare metoda existenta in program
+- pe parcursul generarii codului, se retin sirurile constante intalnite si se
+declara la finalul programului (nu puteau fi declarate cand fusesera intalnite
+deoarece trebuie sa fie globale).
+
+Fiecare expresie din packetul ro.pub.cs.lcpl are o metoda 'emitCode()' care genereaza
+cod pentru expresia respectiva si intoarce indexul simbolului in care e tinut
+rezultatul expresiei. Metoda primeste ca parametiri PrintStream-ul la care trebuie
+sa afiseze cod si o valoare booleana care determina daca expresia trebuie incarcata
+ca valoare sau ca referinta. Atunci cand avem o expresie de forma 'a = e1', valoarea
+'a' va trebui incarcata ca referinta pentru ca atribuirea sa aiba loc cu success.
+
+Variabilele (atribute, parametrii de functii si variabile locale) retin zona de
+memorie unde sunt alocate, aceasta zona putand fi accesata prin intermediul metodei
+'load()', care la randul ei poate intoarce o referinta sau o valoare.
+
+Probleme intalnite pe parcurs si rezolvarea acestora:
+- Atributele de tip String ale unei clase trebuie intitializate cu sirul vid
+inaintea initializarilor celorlalte atribute, deoarece urmatoarele expresii sunt
+valide:
+  var String a = "bc" + d; String d = "aa"; end;
+- am considerat tipul VoidConstant ca fiind un pointer la %struct.TObject initializat
+cu null. Deoarece tipul void putea fi o valoare returnata dintr-o functie a fost
+necesara introducerea unui cast de la pointer la Object la pointer la tipul returnat
+de functie (acest cast nu era introdus de analizorul semantic).
+- pentru comparatii am folosit functia icmp care a necesitat o extindere a rezultatului
+acesteia de la i1 la i32
+- negarea logica am implementat-o folosind operatia xor: am comparat rezultatul expresiei
+cu 0 si apoi am aplicat xor cu i1 1.
+- pentru obtinerea valorilor rezultate in urma unui if am folosit functia phi. Pentru
+acest lucru a fost necesar sa retin ultimul label de pe fiecare branch al if-ului
+(care poate fi diferit fata de labelul branch-ului, daca exista if-uri sau while-uri
+imbricate).
+- procedura pentru dispatch este: se verifica daca obiectul pe care se face apelul
+este nul, se afla pointerul catre runtime information, se extrage pointerul metodei
+din tabela de metode, se face cast la tipul de obiect cu care trebuie apelata metoda,
+se evalueaza parametrii si apoi se face apelul propriu-zis. Pentru dispatch-ul static,
+informatia de runtime este cunoscuta (tipul la care se face dispatch), la fel si tipul
+de obiect cu care se apeleaza metoda, deci acestea nu se mai extrag din obiectul curent
+
+Pentru functii auxiliare am definit clasa Properties, in care se afla (printre altele)
+un generator de indecsi pentru simbolurile locale, un generator de label-uri,
+o metoda care determina tipul de date folosit in cadrul codului intermediar, precum
+si metode care genereaza functii llvm de baza (load, store, bitcast, getelementptr).

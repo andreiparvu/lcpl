@@ -1,0 +1,85 @@
+Andrei Parvu
+341C3
+
+
+Tema 1 CPL
+----------
+
+
+Pentru implementarea temei am folosit atat o gramatica care genereaza AST-ul
+(LCPLTreeBuilder.g), cat si una de tree walker (LCPLTreeChecker.g), amandoua
+instantiate din LCPLParser.java.
+
+Nu voi lista aici regulile folosite pentru parsarea fisierului .lcpl si
+a AST-ului, acest lucru putand fi observat din codul sursa si comentariile
+aferente. In general, pentru evitarea ambiguitatilor am folosit predicate
+sintactice, iar pentru ordonarea AST-ului am folosit operatorii '!', '^' si
+'->'.
+Nodurile din AST le-am generat folosind tokeni fictivi, incercand sa pastrez
+denumiri cat mai sugestive.
+
+Cateva dintre problemele intalnite si cum le-am rezolvat:
+  * ordonarea expresiilor in functie de prioritati: am procedat la fel ca in
+cazul +,-,/,*, punand mai sus in ierarhia de reguli expresiile mai putin
+prioritare
+  * asociativitatea la dreapta a operatorului '=' a fost rezolvata punand
+toti operanzii dintr-o expresie de forma (a = b = c = d = e = 2) pe acelasi
+nivel in AST, iar instantierea claselor facandu-se de la dreapta la stanga
+in TreeChecker.
+  * operatorii de substring ([p1, p2]) inlantuiti - am procedat la fel ca
+mai sus, punand toti operatorii pe acelasi rand in AST si apoi parcurgandu-i
+pentru a instantia fiecare clasa
+
+  * setarea corecta a scope-ului pentru definiri de variabile locale.
+Acest lucru l-am rezolvat folosind o lista de liste de expresii. Toate
+expresiile intalnite in blocul curent sunt puse in prima lista, pana la
+intalnirea unei definiri de variabile locale. In acest moment se trece la
+o noua lista, stiindu-se ca toate elementele urmatoare fac parte din
+scope-ul definirii local. Astfel, ultimul element din fiecare lista este
+un bloc local (mai putin ultimul element din ultima lista, care poate fi
+orice). De asemenea, la un bloc local a fost nevoie de procesarea tuturor
+variabilelor, si de inlantuirea lor inainte ca blocul 'local' sa fie pus
+in lista. Cel mai probabil se putea o implementare mai simpla a acestui
+feature, dar asa mi s-a parut cel ai intuitiv la momentul respectiv.
+De asemenea, trebuia avut grija ca linia de start a unui bloc de local
+era determinata de token-ul 'local', nu de prima declaratie de variabila.
+
+
+Implementarea bonusului
+-----------------------
+
+Pentru bonus am declarat o clasa pentru implementarea unui vector.
+Aceasta este de fapt o lista simplu inlantuita, fiecare instanta de vector
+avand un pointer catre urmatorul element. Intitializarea dimensiunii se face
+cu metoda INIT, setarea unui element cu SET si accesul la element cu GET.
+
+Astfel, in parser am inlocuit constructiile de forma:
+  Object[] x = new Object[5] cu Vector x = [(new Vector).INIT 5];
+  x[3] = 4 cu [x.SET 3, 4];
+  a = x[3] cu [x.GET 3];
+
+Pentru suportarea vectorilor de diferite tipuri, am procedat oarecum asemanator
+cu template-urile din C++: am generat o clasa diferita pentru fiecare tip
+diferit de vectori. Astfel, in fisierul LCPLParserBonus.java, inainte de
+a lansa lexerul si parserul in executie, caut toate expresiile de forma
+"Tip []", le inlocuiesc cu VECTORTip, si adaug clasa VECTORTip la finalul
+fisierului de parser, modificata pentru a suporta operatii cu elemente de tip
+Tip.
+
+Nu este cea mai buna metoda, dar permite atat efectuarea operatiilor cu vectori,
+cat si folosirea lor ca parametrii de functii si valori de retur. De asemenea,
+se pot folosi si vectori de tipul Int.
+O alta solutie ar fi fost scrierea unei clase generice de vector, si apoi
+folosirea de CAST, dar acest lucru ar fi insemnat efectuarea unei analize
+semantice pentru determinarea tipului unei expresii (in caz ca aveam expresie[x]),
+si mi s-a parut mai complicat.
+
+
+Arhiva contine doua directoare, src/ si src_bonus/, in primul aflandu-se
+implementarea normala, si in a doua cea de bonus, impreuna cu implementarea
+clasei VECTOR si un test pentru vectori, vector_test.lcpl.
+
+Pentru compilarea implementarii standard se poate efectua comanda 'make build',
+iar pentru cea bonus 'make build-bonus' + 'make test_vector' pentru rularea
+testului.
+
